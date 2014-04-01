@@ -1,0 +1,5 @@
+{
+  "firebase": "<YOUR-APP-NAME>",
+  "public": "public",
+  "rules": "config/rules.json"
+}

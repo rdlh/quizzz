@@ -1,17 +1,26 @@
-chat-seed
-=========
+![public/img/banner.png](public/img/banner.png)
 
-Simple chat seed application used by [Firebase Tools](https://github.com/firebase/firebase-tools)
-to bootstrap a project.
+Simple nodeJS application for interactive Quizz's powered by [Firebase Tools](https://github.com/firebase/firebase-tools).
 
 ## Getting Started
 
-Once you've used the `firebase bootstrap` command to initialize your project,
-you can run it locally from the `public` directory, using a command like
+### Run it locally
 
-    python -m SimpleHTTPServer
+Create your own firebase.json with this command
 
-and deploy it to your firebaseapp.com domain using this command from the
-project's root directory
+```shell
+cp firebase.json{.sample,}
+```
 
-    firebase deploy
+From the `public` directory, using a command like
+
+```shell
+python -m SimpleHTTPServer
+```
+
+### Deploy it to your firebaseapp.com domain
+using this command from the project's root directory
+
+```shell
+firebase deploy
+```
