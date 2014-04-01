@@ -1,0 +1,5 @@
+{
+  "firebase": "qtest",
+  "public": "public",
+  "rules": "config/rules.json"
+}

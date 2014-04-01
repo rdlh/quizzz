@@ -1,0 +1,196 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Quizz!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="description" content="Quizzzzzzzzz!">
+  <meta name="author" content="Rémi Delhaye">
+  <link rel="icon" type="image/png" href="img/icon.png" />
+  <script type='text/javascript' src="https://cdn.firebase.com/v0/firebase.js"></script>
+  <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
+  <script type='text/javascript' src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script type='text/javascript' src='https://cdn.firebase.com/js/simple-login/1.3.0/firebase-simple-login.js'></script>
+  <script src="https://www.firebase.com/js/libs/idle.js"></script>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h1>Quizz!</h1>
+      </div>
+      <div class="col-lg-12 text-center" id="timer">
+        <h3></h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-3" id="presence_div">
+        <h2>Présents</h2>
+      </div>
+      <div class="col-lg-6">
+        <h2 id="question_title" class="text-center"></h2>
+        <div class="col-lg-12" id="questions_div" data-toggle="buttons">
+
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <h2>Scores</h2>
+        <div id="score_div">
+
+        </div>
+      </div>
+    </div>
+    <div class="row complete">
+      <div class="progress">
+        <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+          <span class="sr-only">60% Complete</span>
+        </div>
+      </div>
+    </div>
+  </div>
+<script type='text/javascript'>
+
+  var currentStatus = 'online';
+  var startRef =  new Firebase('https://qtest.firebaseio.com/start/');
+  var userListRef = new Firebase('https://qtest.firebaseio.com/presence/');
+  var myUserRef = userListRef.push();
+  var connectedRef = new Firebase('https://qtest.firebaseio.com/presence/');
+  var questionsRef = new Firebase('https://qtest.firebaseio.com/questions/');
+  var scoreRef = new Firebase('https://qtest.firebaseio.com/scores/');
+
+  startRef.on('child_changed', function(){
+    $('#progress-bar').width('20%');
+    goTimer();
+  })
+
+  // Get a reference to the root of the chat data.
+  var messagesRef = new Firebase('https://qtest.firebaseio.com/');
+  var auth = new FirebaseSimpleLogin(messagesRef, function(error, user) {
+    if (user) {
+      myScoreRef = scoreRef.push();
+      myScoreRef.set({ name: user.displayName, score: 0 });
+      connectedRef.on('value', function(isOnline) {
+        if (isOnline.val()) {
+          myUserRef.onDisconnect().remove();
+          myScoreRef.onDisconnect().remove();
+          setUserStatus(user.displayName, 'online', user.id);
+        } else {
+          setUserStatus(user.displayName, 'online', user.id);
+        }
+      });
+    } else {
+      auth.login('facebook', {
+        rememberMe: true
+      });
+      //hideOverlay();
+    }
+  });
+
+  // A helper function to let us set our own state.
+  function setUserStatus(name, status, fbk_id) {
+    // Set our status in the list of online users.
+    currentStatus = status;
+    myUserRef.set({ name: name, status: status, fbk_id: fbk_id });
+  }
+
+  function getMessageId(snapshot) {
+    return snapshot.name().replace(/[^a-z0-9\-\_]/gi,'');
+  }
+
+  // Update our GUI to show someone's online status.
+  userListRef.on('child_added', function(snapshot) {
+    var user = snapshot.val();
+
+    $('<div class="media"><a target="_blank" class="pull-left" href="https://facebook.com/' + user.fbk_id + '"><img class="media-object" src="https://graph.facebook.com/' + user.fbk_id + '/picture" alt="' + user.name + '"></a><div class="media-body media-body-margin"><h4 class="media-heading">' + user.name + '</h4></div></div>')
+      .attr('id', getMessageId(snapshot))
+      .appendTo('#presence_div');
+  });
+
+  // Update our GUI to remove the status of a user who has left.
+  userListRef.on('child_removed', function(snapshot) {
+    $('#presence_div').children('#' + getMessageId(snapshot)).remove();
+  });
+
+  // QUESTIONS
+
+  var user_answer = '';
+  var answer = '';
+  var timer = 6;
+
+  $('#questions_div').on('click', '.btn-block', function(){
+    user_answer = $(this).attr('id');
+  });
+
+  // CHANGE QUESTION
+  questionsRef.on('child_changed', function(childSnapshot, prevChildName) {
+    $('#questions_div').html('');
+    questionRef = new Firebase('https://qtest.firebaseio.com/questions/' + childSnapshot.val());
+    questionRef.on('value', function(childSnapshots, prevChildName) {
+      var size = (childSnapshot.val() * 2);
+      $('#progress-bar').width(size + '0%');
+      var childs = childSnapshots.val();
+      answer = childs['answer']
+      $('#question_title').html(childs['question']);
+      $('<label id="lbl1" class="btn btn-block btn-default">' + childs['1'] + '<input type="radio" name="options" id="option1"></label>').appendTo('#questions_div');
+      $('<label id="2" class="btn btn-block btn-default">' + childs['2'] + '<input type="radio" name="options" id="option2"></label>').appendTo('#questions_div');
+      $('<label id="3" class="btn btn-block btn-default">' + childs['3'] + '<input type="radio" name="options" id="option3"></label>').appendTo('#questions_div');
+      timer = 6;
+      goTimer();
+    });
+  });
+
+  questionsRef.once('value', function(childSnapshots, prevChildName) {
+    var childs = childSnapshots.val()[1];
+    answer = childs['answer'];
+    $('#question_title').html(childs['question']);
+    $('<label id="1" class="btn btn-block btn-default">' + childs['1'] + '<input type="radio" name="options" id="option1"></label>').appendTo('#questions_div');
+    $('<label id="2" class="btn btn-block btn-default">' + childs['2'] + '<input type="radio" name="options" id="option2"></label>').appendTo('#questions_div');
+    $('<label id="3" class="btn btn-block btn-default">' + childs['3'] + '<input type="radio" name="options" id="option3"></label>').appendTo('#questions_div');
+  });
+
+  // SCORE
+  function goTimer() {
+    var interval = setInterval(function(){
+      $('#timer h3').html(timer + ' SEC');
+      if(timer == 0){
+        window.clearInterval(interval);
+        $('#questions_div').find('#' + answer).addClass('btn-success');
+        if(answer == user_answer){
+          addScore()
+          $('#timer h3').html('<span class="pas-nul">BIEN JOUÉ !</span>');
+        } else {
+          $('#questions_div').find('#' + user_answer).addClass('btn-danger');
+          $('#timer h3').html('<span class="nul">ALORS, ON EST NUL ?</span>');
+        }
+      }
+      timer = timer - 1;
+    }, 1000)
+  }
+
+  function addScore() {
+    myScoreRef.once('value', function(snapshot){
+      var newscore = snapshot.val()['score'] + 1;
+      console.log(snapshot.val()['score'] + ' -> ' + newscore);
+      myScoreRef.set({ score: newscore });
+    });
+  }
+
+  scoreRef.on('child_added', function(snapshot) {
+    var score = snapshot.val();
+
+    $('<div class="media"><a class="pull-left" href="#">' + score.score + '</a><div class="media-body"><h4 class="media-heading">' + score.name + '</h4></div></div>')
+      .attr('id', getMessageId(snapshot))
+      .appendTo('#score_div');
+  });
+
+  scoreRef.on('child_removed', function(snapshot) {
+    $('#score_div').children('#' + getMessageId(snapshot)).remove();
+  });
+
+  scoreRef.on('child_changed', function(childSnapshot, prevChildName) {
+    $('#score_div').children('#' + getMessageId(childSnapshot)).find('a').html(childSnapshot.val()['score']);
+  });
+</script>
+</body>
+</html>

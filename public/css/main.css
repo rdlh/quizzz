@@ -1,0 +1,86 @@
+@import url(https://fonts.googleapis.com/css?family=Lato:300,400,700,900);
+@import url(https://fonts.googleapis.com/css?family=Raleway:400,300,700,900);
+
+body {
+  background-color: #f2f2f2;
+  font-family: 'Lato', serif;
+  font-weight: 300;
+  font-size: 16px;
+  color: #555;
+  -webkit-font-smoothing: antialiased;
+  -webkit-overflow-scrolling: touch;
+}
+
+h1, h2, h3 {
+  font-family: 'Raleway';
+}
+
+h1 {
+  font-size: 90px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #74cfae;
+}
+
+h2, h3 {
+  color: silver;
+  font-weight: 400;
+  font-size: 30px;
+}
+
+a {
+  color: #F288A2;
+}
+
+.nul {
+  color: #F288A2;
+}
+
+.pas-nul {
+  color: #74cfae;
+}
+
+a:hover {
+  text-decoration: none;
+  color: #F288A2;
+}
+
+.progress-bar {
+  background-color: #74cfae;
+}
+
+.media-body-margin {
+  margin-top: 15px;
+}
+
+.btn-success {
+  color: #fff;
+  background-color: #74cfae;
+  border-color: #ccc;
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open .dropdown-toggle.btn-success {
+  color: #fff;
+  background-color: #74cfae;
+  border-color: #ccc;
+}
+
+.btn-danger {
+  color: #fff;
+  background-color: #F288A2;
+  border-color: #ccc;
+}
+
+.btn-danger:hover, .btn-danger:focus, .btn-danger:active, .btn-danger.active, .open .dropdown-toggle.btn-danger {
+  color: #fff;
+  background-color: #F288A2;
+  border-color: #ccc;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.complete {
+  padding: 45px 15px 15px;
+}
